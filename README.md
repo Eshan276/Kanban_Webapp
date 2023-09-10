@@ -1,6 +1,6 @@
 # Kanban Web App README
 
-![Kanban Web App Screenshot](screenshot.png)
+![Kanban Web App Screenshot](ss.png)
 
 ## Overview
 
@@ -18,13 +18,13 @@ The application is built using HTML, CSS, and JavaScript for the front end. It u
 
 ## Screenshot
 
-![Kanban Web App Screenshot](screenshot.png)
+![Kanban Web App Screenshot](ss.png)
 
 ## Live Demo
 
 You can access and test the Kanban Web App live by visiting the following URL:
 
-[Live Kanban Web App](https://dev1171.dzminzs5l51lh.amplifyapp.com/home.html)
+[Live Kanban Web App](https://dev1171.dzminzs5l51lh.amplifyapp.com/index.html)
 
 ## Getting Started
 

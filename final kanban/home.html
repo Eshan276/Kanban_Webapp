@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Drag & Drop API</title>
+
+    <link rel="stylesheet" href="styles.css" />
+   <script src="mobile_drag.js" defer></script>
+    <script src="todo.js" defer></script>
+  </head>
+  <body onload="callapi(user)">
+    <div class="board">
+        <!--<form id="todo-form">                        
+            <input type="text" placeholder="New TODO..." id="todo-input" />
+            <button type="submit">Add +</button>
+          </form>-->
+      
+
+      <div class="lanes">
+        <div class="swim-lane" id="todo-lane">
+          <h3 class="heading">TODO</h3>
+          <div class="dropdown">
+            <button id="openFormBtn">+</button>
+            <div class="dropdown-content" id="dropdownForm">
+                <!-- Form fields -->
+                <form id="todo-form">
+                    <input id="todo-title" type="text" placeholder="Title">
+                    <textarea id="todo-description" class="desc" placeholder="Description"></textarea>
+                    <button type="submit">Submit</button>
+                </form>
+            </div>
+        </div>
+               <!--
+          <p class="task" id="0" draggable="true">Get<br> groceries</p>
+          <p class="task" id="2" draggable="true">Mow the lawn</p>-->
+        </div>
+
+        <div class="swim-lane" id="doing-lane">
+          <h3 class="heading">Doing</h3>
+
+          <!--<p class="task" id="3" draggable="true">Binge 80 hours of Game of Thrones</p>-->
+        </div>
+
+        <div class="swim-lane" id="done-lane">
+          <h3 class="heading">Done</h3>
+
+          
+        </div>
+      </div>
+    
+    </div>
+    
+    <script>
+      var list=['todo','done','doing'];
+      var user=localStorage.getItem('name');
+      // JavaScript to toggle the visibility of the form when the button is clicked
+      const openFormBtn = document.getElementById("openFormBtn");
+      const dropdownForm = document.getElementById("dropdownForm");
+
+      openFormBtn.addEventListener("click", function () {
+          if (dropdownForm.style.display === "block") {
+              dropdownForm.style.display = "none";
+          } else {
+              dropdownForm.style.display = "block";
+          }
+      });
+      const descriptionTextarea = document.getElementsByClassName("desc");
+
+descriptionTextarea.addEventListener("input", function () {
+    this.style.height = "auto";
+    this.style.height = (this.scrollHeight) + "px";
+});
+    
+function  callapi(user){                                                //onload
+  console.log('hi')
+      // instantiate a headers object
+      var myHeaders = new Headers();
+      // add content type header to object
+      myHeaders.append("Content-Type", "application/json");
+      // using built in JSON utility package turn object to string and store in a variable
+      var raw = JSON.stringify({"user": user});
+      // create a JSON object with parameters for API call and store in a variable
+      var requestOptions = {
+        method: 'POST',
+        headers: myHeaders,
+        body: raw,
+        redirect: 'follow'
+      };
+      // make API call with parameters and use promises to get response
+      fetch("https://4qcyee34jd.execute-api.ap-south-1.amazonaws.com/dev/trello_main", requestOptions)
+        .then(response => response.text())
+        .then(result => {
+          const responseBody = JSON.parse(result).body;
+          var todolist=JSON.parse(result).todo;
+          var doinglist=JSON.parse(result).doing;
+          var donelist=JSON.parse(result).done;
+          curid=JSON.parse(result).curid;
+          console.log(todolist);
+          console.log("curid-"+curid)
+          //var todolist=JSON.parse(todolist);
+          //console.log(todolist[0]);
+          console.log(responseBody);
+          var taskarr=JSON.parse(responseBody);
+          console.log(taskarr[0]);
+          console.log(responseBody.replace(/\"/g, ""));
+          if(todolist[0]!=0){
+          for(var i=0;i<todolist.length;i++){
+               var task1=taskarr[todolist[i]-1];
+               var newarr=task1.split("$");
+               var newtitle=newarr[0];
+               var newdesk=newarr[1];
+               /*console.log(newtitle)
+               console.log(newdesk)*/
+               const task = document.createElement("p");
+               task.classList.add("task");
+                //newTask.id.add(curid);
+                task.setAttribute("id", todolist[i]);
+                
+                  task.setAttribute("draggable", "true");
+                  //newTask.innerText = value;
+               task.innerText= newtitle + "\n" + newdesk;
+               task.addEventListener("dragstart", () => {
+                  task.classList.add("is-dragging");
+                  oldparent=document.getElementById(task.parentNode.id);
+                    oldparent1=task.parentNode.id;
+                    console.log(oldparent1);
+                  /*oldparent=document.getElementById(newTask.parentNode.id);
+                  oldparent1=newTask.parentNode.id;
+                  console.log(oldparent1);*/
+            });
+            task.addEventListener("dragend", () => {
+              task.classList.remove("is-dragging");
+              task.classList.remove("is-dragging");
+    console.log(100);
+    console.log("oldparent"+oldparent1[2]);
+    var newparent=task.parentNode.id;
+    if(oldparent1!=newparent){
+      var opr=1;//alada
+      //console.log(oldparent1+"equal"+newparent);
+      //var childElements = oldparent.querySelectorAll('.task');
+      var childElements = oldparent.children;
+      var paragraphIds = [];
+
+  // Iterate through the child elements
+  for (var i = 0; i < childElements.length; i++) {
+    var child = childElements[i];
+
+    // Check if the child is a paragraph
+    if (child.nodeName === "P") {
+      // Push the ID of the paragraph into the array
+      paragraphIds.push(child.id);
+    }
+  }
+
+  // Now, paragraphIds contains the IDs of the child paragraphs
+   console.log(paragraphIds)
+      //call api to enter this data
+
+    var parent= task.closest(".swim-lane");
+    var childarray=[];
+    console.log(parent);
+    if (parent) {
+      // Loop through the child elements of the swim-lane
+      for (var i = 0; i < parent.children.length; i++) {
+          var child = parent.children[i];
+          if (child.nodeName === 'P' && child.classList.contains('task')) {
+              childarray.push(child.id);
+          }
+      }
+  }
+  //HERE WE WILL CALL OUR API TO CHANGE the data of <SPECIFIC> list
+  console.log(childarray);
+  console.log("not same");
+   
+  var order=[];
+  if(oldparent1[2]=="d"){
+    //console.log(oldparent1[2]+"how");
+  order.push(0);
+}else if(oldparent1[2]=="i"){
+  order.push(1);
+}else if(oldparent1[2]=="n"){
+  order.push(2);
+}
+if(newparent[2]=="d"){
+  //console.log(newparent[2]+"how");
+  order.push(0);
+}else if(newparent[2]=="i"){
+  order.push(1);
+}else if(newparent[2]=="n"){
+  order.push(2);
+}
+console.log(user,paragraphIds ,childarray,order,opr);
+list_entry(user,paragraphIds ,childarray,order,opr);
+    }else{
+      var opr=0; // same hole
+      console.log("new"+newparent);
+    var parent= task.closest(".swim-lane");
+    var childarray=[];
+    console.log(parent);
+    if (parent) {
+      // Loop through the child elements of the swim-lane
+      for (var i = 0; i < parent.children.length; i++) {
+          var child = parent.children[i];
+          if (child.nodeName === 'P' && child.classList.contains('task')) {
+              childarray.push(child.id);
+          }
+      }
+  }
+  //HERE WE WILL CALL OUR API TO CHANGE the data of <SPECIFIC> list
+  console.log(childarray);
+  console.log("same");
+  var order=[];
+if(newparent[2]=="d"){
+  order.push(0);
+}else if(newparent[2]=="i"){
+  order.push(1);
+}else if(newparent[2]=="n"){
+  order.push(2);
+}
+var newarray1=[0]; //unused
+console.log(user,childarray,newarray1,order,opr);
+list_entry(user,childarray,newarray1,order,opr);
+
+
+}
+     });        //drag end
+            
+              
+              task.addEventListener('touchmove', function (ev) {
+                // Grab the location of the touch
+                console.log(0)
+                //task.setAttribute("draggable", "false");
+            var touchLocation = ev.targetTouches[0];
+            console.log(touchLocation)
+              // Assign mustachio new coordinates based on the touch
+              task.style.left = touchLocation.pageX + 'px';
+               task.style.top = touchLocation.pageY + 'px';
+               console.log(task.style.left)
+                  });
+              task.addEventListener("touchend", (e) => {
+                    // Prevent the default behavior to avoid scrolling or other issues
+                e.preventDefault();
+                task.classList.remove("is-dragging");
+                console.log(690)
+               /*task.classList.add("is-dragging");
+              oldParent = task.parentNode;
+              oldParentId = oldParent.id;*/
+              });
+           //kkkkkk
+              var todoLane = document.getElementById("todo-lane");
+            todoLane.appendChild(task);
+          }        //for loop
+        }                 //if todo list er end
+          /*const per = parseFloat(responseBody)
+          var attendancePercentage = per;
+          var outputElement = document.getElementById("per_output");
+          outputElement.textContent = attendancePercentage.toFixed(2) + "%";*/
+          if(doinglist[0]!=0){
+          for(var i=0;i<doinglist.length;i++){
+               var task1=taskarr[doinglist[i]-1];
+               var newarr=task1.split("$");
+               var newtitle=newarr[0];
+               var newdesk=newarr[1];
+               /*console.log(newtitle)
+               console.log(newdesk)*/
+               const task = document.createElement("p");
+               task.classList.add("task");
+                //newTask.id.add(curid);
+                task.setAttribute("id", doinglist[i]);
+                
+                  task.setAttribute("draggable", "true");
+                  //newTask.innerText = value;
+               task.innerText= newtitle + "\n" + newdesk;
+               task.addEventListener("dragstart", () => {
+                  task.classList.add("is-dragging");
+                  /*oldparent=document.getElementById(newTask.parentNode.id);
+                  oldparent1=newTask.parentNode.id;
+                  console.log(oldparent1);*/
+                  oldparent=document.getElementById(task.parentNode.id);
+                    oldparent1=task.parentNode.id;
+                    console.log(oldparent1);
+            });
+            task.addEventListener("dragend", () => {
+              task.classList.remove("is-dragging");
+              console.log(100);
+    console.log("oldparent"+oldparent1[2]);
+    var newparent=task.parentNode.id;
+    if(oldparent1!=newparent){
+      var opr=1;//alada
+      //console.log(oldparent1+"equal"+newparent);
+      //var childElements = oldparent.querySelectorAll('.task');
+      var childElements = oldparent.children;
+      var paragraphIds = [];
+
+  // Iterate through the child elements
+  for (var i = 0; i < childElements.length; i++) {
+    var child = childElements[i];
+
+    // Check if the child is a paragraph
+    if (child.nodeName === "P") {
+      // Push the ID of the paragraph into the array
+      paragraphIds.push(child.id);
+    }
+  }
+
+  // Now, paragraphIds contains the IDs of the child paragraphs
+   console.log(paragraphIds)
+      //call api to enter this data
+
+    var parent= task.closest(".swim-lane");
+    var childarray=[];
+    console.log(parent);
+    if (parent) {
+      // Loop through the child elements of the swim-lane
+      for (var i = 0; i < parent.children.length; i++) {
+          var child = parent.children[i];
+          if (child.nodeName === 'P' && child.classList.contains('task')) {
+              childarray.push(child.id);
+          }
+      }
+  }
+  //HERE WE WILL CALL OUR API TO CHANGE the data of <SPECIFIC> list
+  console.log(childarray);
+  console.log("not same");
+   
+  var order=[];
+  if(oldparent1[2]=="d"){
+    //console.log(oldparent1[2]+"how");
+  order.push(0);
+}else if(oldparent1[2]=="i"){
+  order.push(1);
+}else if(oldparent1[2]=="n"){
+  order.push(2);
+}
+if(newparent[2]=="d"){
+  //console.log(newparent[2]+"how");
+  order.push(0);
+}else if(newparent[2]=="i"){
+  order.push(1);
+}else if(newparent[2]=="n"){
+  order.push(2);
+}
+console.log(user,paragraphIds ,childarray,order,opr);
+list_entry(user,paragraphIds ,childarray,order,opr);
+
+    }else{
+      var opr=0; // same hole
+      console.log("new"+newparent);
+    var parent= task.closest(".swim-lane");
+    var childarray=[];
+    console.log(parent);
+    if (parent) {
+      // Loop through the child elements of the swim-lane
+      for (var i = 0; i < parent.children.length; i++) {
+          var child = parent.children[i];
+          if (child.nodeName === 'P' && child.classList.contains('task')) {
+              childarray.push(child.id);
+          }
+      }
+  }
+  //HERE WE WILL CALL OUR API TO CHANGE the data of <SPECIFIC> list
+  console.log(childarray);
+  console.log("same");
+  var order=[];
+if(newparent[2]=="d"){
+  order.push(0);
+}else if(newparent[2]=="i"){
+  order.push(1);
+}else if(newparent[2]=="n"){
+  order.push(2);
+}
+var newarray1=[0]; //unused
+console.log(user,childarray,newarray1,order,opr);
+list_entry(user,childarray,newarray1,order,opr);
+
+
+}
+
+
+
+            });
+
+              console.log(task.style.left)
+              task.addEventListener('touchmove', function (ev) {
+                // Grab the location of the touch
+                console.log(0)
+                //task.setAttribute("draggable", "false");
+            var touchLocation = ev.targetTouches[0];
+            console.log(touchLocation)
+              // Assign mustachio new coordinates based on the touch
+              task.style.left = touchLocation.pageX + 'px';
+               task.style.top = touchLocation.pageY + 'px';
+               console.log(task.style.left)
+                  });
+              task.addEventListener("touchend", (e) => {
+                    // Prevent the default behavior to avoid scrolling or other issues
+                e.preventDefault();
+                task.classList.remove("is-dragging");
+                console.log(690)
+               /*task.classList.add("is-dragging");
+              oldParent = task.parentNode;
+              oldParentId = oldParent.id;*/
+              });
+            var doingLane = document.getElementById("doing-lane");
+            doingLane.appendChild(task);
+          }
+        }
+          if(donelist[0]!=0){
+          for(var i=0;i<donelist.length;i++){
+               var task1=taskarr[donelist[i]-1];
+               var newarr=task1.split("$");
+               var newtitle=newarr[0];
+               var newdesk=newarr[1];
+               /*console.log(newtitle)
+               console.log(newdesk)*/
+               const task = document.createElement("p");
+               task.classList.add("task");
+                //newTask.id.add(curid);
+                task.setAttribute("id", donelist[i]);
+                
+                  task.setAttribute("draggable", "true");
+                  //newTask.innerText = value;
+               task.innerText= newtitle + "\n" + newdesk;
+               task.addEventListener("dragstart", () => {
+                  task.classList.add("is-dragging");
+                  /*oldparent=document.getElementById(newTask.parentNode.id);
+                  oldparent1=newTask.parentNode.id;
+                  console.log(oldparent1);*/
+                  oldparent=document.getElementById(task.parentNode.id);
+                    oldparent1=task.parentNode.id;
+                    console.log(oldparent1);
+            });
+            task.addEventListener("dragend", () => {
+              task.classList.remove("is-dragging");
+              console.log(100);
+    console.log("oldparent"+oldparent1[2]);
+    var newparent=task.parentNode.id;
+    if(oldparent1!=newparent){
+      var opr=1;//alada
+      //console.log(oldparent1+"equal"+newparent);
+      //var childElements = oldparent.querySelectorAll('.task');
+      var childElements = oldparent.children;
+      var paragraphIds = [];
+
+  // Iterate through the child elements
+  for (var i = 0; i < childElements.length; i++) {
+    var child = childElements[i];
+
+    // Check if the child is a paragraph
+    if (child.nodeName === "P") {
+      // Push the ID of the paragraph into the array
+      paragraphIds.push(child.id);
+    }
+  }
+
+  // Now, paragraphIds contains the IDs of the child paragraphs
+   console.log(paragraphIds)
+      //call api to enter this data
+
+    var parent= task.closest(".swim-lane");
+    var childarray=[];
+    console.log(parent);
+    if (parent) {
+      // Loop through the child elements of the swim-lane
+      for (var i = 0; i < parent.children.length; i++) {
+          var child = parent.children[i];
+          if (child.nodeName === 'P' && child.classList.contains('task')) {
+              childarray.push(child.id);
+          }
+      }
+  }
+  //HERE WE WILL CALL OUR API TO CHANGE the data of <SPECIFIC> list
+  console.log(childarray);
+  console.log("not same");
+   
+  var order=[];
+  if(oldparent1[2]=="d"){
+    //console.log(oldparent1[2]+"how");
+  order.push(0);
+}else if(oldparent1[2]=="i"){
+  order.push(1);
+}else if(oldparent1[2]=="n"){
+  order.push(2);
+}
+if(newparent[2]=="d"){
+  //console.log(newparent[2]+"how");
+  order.push(0);
+}else if(newparent[2]=="i"){
+  order.push(1);
+}else if(newparent[2]=="n"){
+  order.push(2);
+}
+console.log(user,paragraphIds ,childarray,order,opr);
+list_entry(user,paragraphIds ,childarray,order,opr);
+
+    }else{
+      var opr=0; // same hole
+      console.log("new"+newparent);
+    var parent= task.closest(".swim-lane");
+    var childarray=[];
+    console.log(parent);
+    if (parent) {
+      // Loop through the child elements of the swim-lane
+      for (var i = 0; i < parent.children.length; i++) {
+          var child = parent.children[i];
+          if (child.nodeName === 'P' && child.classList.contains('task')) {
+              childarray.push(child.id);
+          }
+      }
+  }
+  //HERE WE WILL CALL OUR API TO CHANGE the data of <SPECIFIC> list
+  console.log(childarray);
+  console.log("same");
+  var order=[];
+if(newparent[2]=="d"){
+  order.push(0);
+}else if(newparent[2]=="i"){
+  order.push(1);
+}else if(newparent[2]=="n"){
+  order.push(2);
+}
+var newarray1=[0]; //unused
+console.log(user,childarray,newarray1,order,opr);
+list_entry(user,childarray,newarray1,order,opr);
+
+
+}
+
+                  
+            });
+
+              console.log(task.style.left)
+              task.addEventListener('touchmove', function (ev) {
+                // Grab the location of the touch
+                console.log(0)
+                //task.setAttribute("draggable", "false");
+            var touchLocation = ev.targetTouches[0];
+            console.log(touchLocation)
+              // Assign mustachio new coordinates based on the touch
+              task.style.left = touchLocation.pageX + 'px';
+               task.style.top = touchLocation.pageY + 'px';
+               console.log(task.style.left)
+                  });
+              task.addEventListener("touchend", (e) => {
+                    // Prevent the default behavior to avoid scrolling or other issues
+                e.preventDefault();
+                task.classList.remove("is-dragging");
+                console.log(690)
+               /*task.classList.add("is-dragging");
+              oldParent = task.parentNode;
+              oldParentId = oldParent.id;*/
+              });
+            var doneLane = document.getElementById("done-lane");
+            doneLane.appendChild(task);
+          }
+        }
+        })
+        .catch(error => console.log('error', error));
+      
+      }
+
+
+     
+      function list_entry (user,list1,list2,listorder,opr) {
+      
+      // instantiate a headers object
+      var myHeaders = new Headers();
+      // add content type header to object
+      myHeaders.append("Content-Type", "application/json");
+      // using built in JSON utility package turn object to string and store in a variable
+      var raw = JSON.stringify({"user": user,"list1":list1,"list2":list2,"listorder": listorder,"opr" :opr});
+      // create a JSON object with parameters for API call and store in a variable
+      var requestOptions = {
+        method: 'POST',
+        headers: myHeaders,
+        body: raw,
+        redirect: 'follow'
+      };
+      // make API call with parameters and use promises to get response
+      fetch("https://4qcyee34jd.execute-api.ap-south-1.amazonaws.com/dev/trello_listentry", requestOptions)
+        .then(response => response.text())
+        .then(result => {
+          const responseBody = JSON.parse(result).body;
+          console.log(responseBody);
+        })
+        .catch(error => console.log('error', error));
+    }
+  </script>
+  </body>
+</html>
